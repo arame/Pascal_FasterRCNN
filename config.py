@@ -15,7 +15,7 @@ class Hyper:
     def display():
         print("The Hyperparameters")
         print("-------------------")
-        print(f"NUmber of epochs = {Hyper.total_epochs}")
+        print(f"Number of epochs = {Hyper.total_epochs}")
         print(f"learning rate = {Hyper.learning_rate}")
         print(f"batch_size = {Hyper.batch_size}")
 

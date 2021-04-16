@@ -47,12 +47,13 @@ def train():
     if Constants.load_model:
         step = load_checkpoint(fasterrcnn_model, fasterrcnn_optimizer)
 
-    fasterrcnn_model.train()  # Set model to training mode
+    fasterrcnn_model.train()  
     start_time = time.time()
     epoch = 0
     total_steps = 0
     length_dataloader = len(instance_dataloader)
     for _ in range(Hyper.total_epochs):
+        fasterrcnn_model.train()    # Set model to training mode
         epoch += 1
         epoch_loss = 0
         print(f"Starting epoch: {epoch}")
@@ -93,7 +94,7 @@ def train():
                 fasterrcnn_optimizer.step()
         epoch_loss = epoch_loss / length_dataloader
         print(f"Loss in epoch {epoch} = {epoch_loss}".format(epoch, epoch_loss))
-        fasterrcnn_model.eval()
+        # fasterrcnn_model.eval()     # Set model to validation mode
         if Constants.save_model:
             checkpoint = {
                 "state_dict": fasterrcnn_model.state_dict(),
