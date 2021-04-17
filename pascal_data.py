@@ -1,5 +1,4 @@
 import os,sys,re
-#import cv2
 import numpy as np
 import torch
 import torch.nn as nn
@@ -158,25 +157,6 @@ class PascalVOC2012Dataset(data.Dataset):
          label['boxes'] = torch.as_tensor(bboxes)
          return label
      
-     
-     # semantic segmentation mask
-     # size HxWx1, with pixels set to the values of correct class
-     def extract_segmentation_mask_pascal(self, idx, list_of_classes):
-         # all 'blobs' smaller than this value will be delted
-         min_size = 500
-         mask_name = self.imgs[idx].split('.')[0] + '.png'
-         mask = np.array(PILImage.open(os.path.join(self.dir_label,mask_name)))
-         # clean the mask
-         mask[mask==255] = 0
-         lab = label(mask)
-         regions = regionprops(lab)
-         # loop through all isolated regions, get rid of small regions (convert to backgrund)
-         for idx, r in enumerate(regions):
-             if r.area<min_size:
-                mask[lab == idx+1] = 0
-
-         mask = torch.as_tensor(mask, dtype=torch.uint8) 
-         return mask
 
      #'magic' method: size of the dataset
      def __len__(self):

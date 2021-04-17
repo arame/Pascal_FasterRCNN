@@ -4,6 +4,7 @@ class Hyper:
     total_epochs = 20
     learning_rate = 1e-6
     batch_size = 1
+    box_score_thresh = 0.75
     img_max_size = (512,512)
     pascal_categories = ['__bgr__', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',  
         'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 
@@ -26,7 +27,7 @@ class Constants:
     save_model = True
     dir_images = "../pascal/train_data"
     dir_label_bbox = "../pascal/annotations"
-    backup_model_folder = "../backup"
-    backup_model_path = "../backup/model.pth"
+    backup_model_folder = "../backup_pascal"
+    backup_model_path = "../backup_pascal/model.pth"
 
 
