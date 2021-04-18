@@ -10,9 +10,31 @@ def save_checkpoint(checkpoint):
 
 
 def load_checkpoint(model, optimizer):
-    checkpoint = T.load(OutputStore.backup_model_path)
+    checkpoint = T.load(OutputStore.backup_model_path, model)
     epoch = checkpoint["epoch"]
     print(f"=> Loading checkpoint from epoch {epoch}")
     model.load_state_dict(checkpoint["state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer"])
     return epoch
+
+
+def check_if_target_bbox_degenerate(targets):
+
+    if targets is None:
+        return False
+
+    for target_idx, target in enumerate(targets):
+        boxes = target["boxes"]
+        degenerate_boxes = None
+        if len(boxes.shape) != 2:
+            return True
+
+        degenerate_boxes = boxes[:, 2:] <= boxes[:, :2]
+        if degenerate_boxes.any():
+            # print the first degenerate box
+            bb_idx = T.where(degenerate_boxes.any(dim=1))[0][0]
+            degen_bb = boxes[bb_idx].tolist()
+            print("All bounding boxes should have positive height and width.")
+            print(f"Found invalid box {degen_bb} for target at index {target_idx}.")
+            return True
+    return False

@@ -29,6 +29,7 @@ class Constants:
     load_model = False
     save_model = True
     dir_images = "../pascal/train_data"
+    dir_test_images = "../pascal/test_data"
     dir_label_bbox = "../pascal/annotations"
 
 
