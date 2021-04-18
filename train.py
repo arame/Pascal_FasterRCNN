@@ -13,10 +13,10 @@ from torchvision import transforms as transforms
 import pascal_data as dataset
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torch.utils import data
-import matplotlib.pyplot as plt
 from config import Hyper, Constants
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 from utils import load_checkpoint, save_checkpoint
+from results import save_loss_per_epoch_chart
 
 def train():
     # convert list to dict
@@ -52,6 +52,7 @@ def train():
     total_steps = 0
     total_loss = 0
     length_dataloader = len(instance_dataloader)
+    loss_per_epoch = []
     for _ in range(Hyper.total_epochs):
         fasterrcnn_model.train()    # Set model to training mode
         epoch += 1
@@ -89,6 +90,7 @@ def train():
                 total_loss.backward()
                 fasterrcnn_optimizer.step()
         epoch_loss = epoch_loss / length_dataloader
+        loss_per_epoch.append(epoch_loss)
         print(f"Loss in epoch {epoch} = {epoch_loss}")
         # fasterrcnn_model.eval()     # Set model to validation mode
         if Constants.save_model:
@@ -98,6 +100,7 @@ def train():
                 "epoch": epoch
             }
             save_checkpoint(checkpoint)
+    save_loss_per_epoch_chart(loss_per_epoch)
 
 
 def check_if_target_bbox_degenerate(targets):

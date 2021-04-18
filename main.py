@@ -1,28 +1,24 @@
-import torch as T
-import torchvision as TV
-import numpy as np
+from config import Hyper, OutputStore
+from train import train
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
-from utils import checkfolders
-from config import Hyper, Constants
-from train import train
+
 
 # It all starts here
 def main():
     print("\n"*10)
     print("-"*100)
     print("Start of Person Detection in Images")
+    OutputStore.set_output_stores()     # Ensures the folders exist for output
     Hyper.display()
-    checkfolders()
     train()
     print("-"*100)
-    #train()
-
-    print("\n"*5)  
+    print("\n"*5)
     print("-"*100)
     Hyper.display()
     print("End of Person Detection in Images")
     print("-"*100)
-    
+
+
 if __name__ == "__main__":
     main()
