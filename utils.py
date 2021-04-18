@@ -9,13 +9,18 @@ def save_checkpoint(checkpoint):
     T.save(checkpoint, OutputStore.backup_model_path)
 
 
-def load_checkpoint(model, optimizer):
-    checkpoint = T.load(OutputStore.backup_model_path, model)
+def load_checkpoint(model, optimizer, epoch):
+    checkpoint = {
+        "state_dict": model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "epoch": epoch
+    }
+    checkpoint = T.load(OutputStore.backup_model_path, checkpoint)
     epoch = checkpoint["epoch"]
     print(f"=> Loading checkpoint from epoch {epoch}")
     model.load_state_dict(checkpoint["state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer"])
-    return epoch
+    return model
 
 
 def check_if_target_bbox_degenerate(targets):

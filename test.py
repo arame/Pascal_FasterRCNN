@@ -30,18 +30,14 @@ def test(fasterrcnn_model):
     instance_data_point = dataset.PascalVOC2012Dataset(**instance_data_args)
     instance_dataloader_args = {'batch_size':Hyper.batch_size, 'shuffle':False}
     instance_dataloader = data.DataLoader(instance_data_point, **instance_dataloader_args)
-    length_dataloader = len(instance_dataloader)
-
     fasterrcnn_model.eval()     # Set to eval mode for validation
-    total_loss = 0
-    test_loss = 0
     step = 0
     for id, batch in enumerate(instance_dataloader):
         _,X,y = batch
         step += 1
         if step % 100 == 0:
             curr_time = time.strftime('%Y/%m/%d %H:%M:%S')
-            print(f"-- {curr_time} step: {step} loss: {total_loss}")
+            print(f"-- {curr_time} step: {step}")
         X,y['labels'],y['boxes'] = X.to(Constants.device), y['labels'].to(Constants.device), y['boxes'].to(Constants.device)
         # list of images
         images = [im for im in X]
@@ -52,25 +48,26 @@ def test(fasterrcnn_model):
         if is_bb_degenerate:
             continue  # Ignore images with degenerate bounding boxes
         # avoid empty objects
-        if len(targets) > 0:
-            loss = fasterrcnn_model(images, targets)
-            total_loss = 0
-            for k in loss.keys():
-                total_loss += loss[k]
-            
-            test_loss += total_loss
+        if len(targets) == 0:
+            continue
 
-        test_loss = test_loss / length_dataloader
-        print(f"Loss from testing = {test_loss}")
+        # Get the predictions from the trained model
+        prediction = fasterrcnn_model(images, targets)
+
+        # now compare the predictions with the ground truth values
+        # TODO IoU calculations and accuracy calculations
+        i = 0
+
+
 
 
 if __name__ == "__main__":
     fasterrcnn_args = {'box_score_thresh':Hyper.box_score_thresh, 'num_classes':91, 'min_size':512, 'max_size':800}
     # fasterrcnn_resnet50_fpn is pretrained on Coco's 91 classes
-    fasterrcnn_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,**fasterrcnn_args)
-    print(fasterrcnn_model)
-    fasterrcnn_model = fasterrcnn_model.to(Constants.device)
+    fasterrcnn_model_ = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,**fasterrcnn_args)
+    fasterrcnn_model_ = fasterrcnn_model_.to(Constants.device)
     fasterrcnn_optimizer_pars = {'lr': Hyper.learning_rate}
-    fasterrcnn_optimizer = optim.Adam(list(fasterrcnn_model.parameters()), **fasterrcnn_optimizer_pars)
-    model = load_checkpoint(fasterrcnn_model, fasterrcnn_optimizer)
+    fasterrcnn_optimizer = optim.Adam(list(fasterrcnn_model_.parameters()), **fasterrcnn_optimizer_pars)
+    epoch = 50
+    model = load_checkpoint(fasterrcnn_model_, fasterrcnn_optimizer, epoch)
     test(model)

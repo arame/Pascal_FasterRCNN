@@ -69,6 +69,7 @@ def train():
             if step % 100 == 0:
                 curr_time = time.strftime('%Y/%m/%d %H:%M:%S')
                 print(f"-- {curr_time} epoch: {epoch} step: {step} loss: {total_loss}")
+
             X,y['labels'],y['boxes'] = X.to(Constants.device), y['labels'].to(Constants.device), y['boxes'].to(Constants.device)
             # list of images
             images = [im for im in X]
@@ -83,15 +84,17 @@ def train():
             if is_bb_degenerate:
                 continue  # Ignore images with degenerate bounding boxes
             # avoid empty objects
-            if len(targets) > 0:
-                loss = fasterrcnn_model(images, targets)
-                total_loss = 0
-                for k in loss.keys():
-                    total_loss += loss[k]
+            if len(targets) == 0:
+                continue    # Ignore if no targets
 
-                epoch_loss += total_loss.item()
-                total_loss.backward()
-                fasterrcnn_optimizer.step()
+            loss = fasterrcnn_model(images, targets)
+            total_loss = 0
+            for k in loss.keys():
+                total_loss += loss[k]
+
+            epoch_loss += total_loss.item()
+            total_loss.backward()
+            fasterrcnn_optimizer.step()
         epoch_loss = epoch_loss / length_dataloader
         loss_per_epoch.append(epoch_loss)
         print(f"Loss in epoch {epoch} = {epoch_loss}")
