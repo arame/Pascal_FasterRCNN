@@ -11,6 +11,6 @@ def save_loss_per_epoch_chart(losses):
     epochs = np.arange(1, len(losses) + 1)
     plt.title(f"Loss per epoch")
     plt.plot(epochs, losses)
-    plt.ylabel('Epoch')
-    plt.xlabel('Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
     plt.savefig(chart_path)
