@@ -17,7 +17,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 from utils import load_checkpoint, save_checkpoint, check_if_target_bbox_degenerate
 from results import save_loss_per_epoch_chart
 
-def train():
+def train(epoch = 0):
     # convert list to dict
     pascal_voc_classes = {}
     for id, name in enumerate(Hyper.pascal_categories):
@@ -45,9 +45,7 @@ def train():
     fasterrcnn_optimizer = optim.Adam(list(fasterrcnn_model.parameters()), **fasterrcnn_optimizer_pars)
     #####################################################################
     if Constants.load_model:
-        epoch = load_checkpoint(fasterrcnn_model, fasterrcnn_optimizer)
-    else:
-        epoch = 0
+        fasterrcnn_model = load_checkpoint(fasterrcnn_model, fasterrcnn_optimizer, epoch)
 
     fasterrcnn_model.train()  
     start_time = time.strftime('%Y/%m/%d %H:%M:%S')

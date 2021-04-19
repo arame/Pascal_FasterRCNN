@@ -13,6 +13,7 @@ from config import Hyper, Constants
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 from utils import load_checkpoint, save_checkpoint, check_if_target_bbox_degenerate
 from results import save_loss_per_epoch_chart
+from metrics import compute_ap
 
 
 def test(fasterrcnn_model):
@@ -22,7 +23,7 @@ def test(fasterrcnn_model):
     pascal_voc_classes = {}
     for id, name in enumerate(Hyper.pascal_categories):
         pascal_voc_classes[name] = id
-
+    pascal_voc_classes_name = {v: k for k, v in pascal_voc_classes.items()}
     instance_data_args= {'classes':pascal_voc_classes, 
                         'img_max_size':Hyper.img_max_size, 
                         'dir':Constants.dir_test_images, 
@@ -52,10 +53,13 @@ def test(fasterrcnn_model):
             continue
 
         # Get the predictions from the trained model
-        prediction = fasterrcnn_model(images, targets)
+        predictions = fasterrcnn_model(images, targets)
 
-        # now compare the predictions with the ground truth values
+        # now compare the predictions with the ground truth values in the targets
         # TODO IoU calculations and accuracy calculations
+        
+        mAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
+
         i = 0
 
 
