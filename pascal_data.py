@@ -78,7 +78,7 @@ class PascalVOC2012Dataset(data.Dataset):
         if intersect>0:
             iou = intersect/(s1 + s2 - intersect + 1)
         else:
-            iou = 0
+            iou = 0     # false positive
         return iou
 
     # fname must be an XML file with the name of the class of the object in the bbox,
