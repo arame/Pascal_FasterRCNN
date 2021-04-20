@@ -39,7 +39,8 @@ class OutputStore:
     backup_model_path = "../backup_pascal/model.pth"
     chart_path_pascal = "../charts_pascal"
     loss_filename = "losses_per_epoch.jpg"
-    ave_mAP_filename = "ave_mAP_per_epoch.jpg"
+    ave_MAP_filename = "ave_MAP_per_epoch.jpg"
+    ave_IOU_filename = "ave_IOU_per_epoch.jpg"
 
 
     [staticmethod]

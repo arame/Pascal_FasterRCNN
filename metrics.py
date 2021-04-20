@@ -110,6 +110,6 @@ def compute_ap(predictions, targets):
         precisions[i] = torch.max(precisions[i], precisions[i + 1])
     # Compute mean AP over recall range
     indices = torch.nonzero(recalls[:-1] !=recalls[1:]).squeeze_(1)+1
-    mAP = torch.sum((recalls[indices] - recalls[indices - 1]) * precisions[indices])
-    return mAP, precisions, recalls, overlaps
+    MAP = torch.sum((recalls[indices] - recalls[indices - 1]) * precisions[indices])
+    return MAP, precisions, recalls, overlaps
 

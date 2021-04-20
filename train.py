@@ -11,7 +11,7 @@ from pascal_data import PascalVOC2012Dataset
 from metrics import compute_ap
 from config import Hyper, Constants
 from utils import load_checkpoint, save_checkpoint, check_if_target_bbox_degenerate
-from results import save_loss_per_epoch_chart, save_ave_mAP_per_epoch_chart
+from results import save_loss_per_epoch_chart, save_ave_MAP_per_epoch_chart, save_ave_overlaps_per_epoch_chart
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
@@ -42,7 +42,8 @@ def train(epoch = 0):
     total_loss = 0
     length_dataloader = len(train_dataloader)
     loss_per_epoch = []
-    ave_mAP_per_epoch = []
+    ave_MAP_per_epoch = []
+    ave_overlaps_per_epoch = []
     for _ in range(Hyper.total_epochs):
         epoch += 1
         epoch_loss = 0
@@ -95,14 +96,16 @@ def train(epoch = 0):
 
         fasterrcnn_model.eval()  # Set to eval mode for validation
         step = 0
-        tot_mAP = 0
-        ave_mAP = 0
+        tot_MAP = 0
+        ave_MAP = 0
+        tot_overlaps = 0
+        tot_overlaps_cnt = 0
         for id, batch in enumerate(val_dataloader):
             _, X, y = batch
             step += 1
             if step % 100 == 0:
                 curr_time = time.strftime('%Y/%m/%d %H:%M:%S')
-                print(f"-- {curr_time} step: {step} ave mAP {ave_mAP}")
+                print(f"-- {curr_time} step: {step}")
             X, y['labels'], y['boxes'] = X.to(Constants.device), y['labels'].to(Constants.device), y['boxes'].to(
                 Constants.device)
             # list of images
@@ -121,14 +124,21 @@ def train(epoch = 0):
             predictions = fasterrcnn_model(images, targets)
 
             # now compare the predictions with the ground truth values in the targets
-            mAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
+            MAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
             # print(f"map: {mAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
-            tot_mAP += mAP
+            tot_MAP += MAP
+            tot_overlaps += sum(overlaps)
+            tot_overlaps_cnt += len(overlaps)
 
-        ave_mAP = tot_mAP / step
-        ave_mAP_per_epoch.append(ave_mAP)
+        ave_MAP = tot_MAP / step
+        ave_MAP_per_epoch.append(ave_MAP)
+        ave_overlaps = tot_overlaps / tot_overlaps_cnt
+        ave_overlaps_per_epoch.append(ave_overlaps)
+        print(f"Validation completed for epoch. Average MAP {ave_MAP}, average IoU {ave_overlaps} from {tot_overlaps_cnt}")
+
     save_loss_per_epoch_chart(loss_per_epoch)
-    save_ave_mAP_per_epoch_chart(ave_mAP_per_epoch)
+    save_ave_MAP_per_epoch_chart(ave_MAP_per_epoch)
+    save_ave_overlaps_per_epoch_chart(ave_overlaps_per_epoch)
     end_time = time.strftime('%Y/%m/%d %H:%M:%S')
     print(f"Training end time: {end_time}")
     return fasterrcnn_model
