@@ -104,15 +104,8 @@ def train(epoch = 0):
         for id, batch in enumerate(val_dataloader):
             _, X, y = batch
             step += 1
-            if step % 100 == 0:
                 curr_time = time.strftime('%Y/%m/%d %H:%M:%S')
-                print(f"-- {curr_time} step: {step}")
 =======
-        tot_mAP = 0
-        for id, batch in enumerate(val_dataloader):
-            _, X, y = batch
-            step += 1
->>>>>>> e7f4acb00ca31ea593efca9d095d86ebba25be60
             X, y['labels'], y['boxes'] = X.to(Constants.device), y['labels'].to(Constants.device), y['boxes'].to(
                 Constants.device)
             # list of images
@@ -137,12 +130,8 @@ def train(epoch = 0):
             tot_overlaps += sum(overlaps)
             tot_overlaps_cnt += len(overlaps)
 
-        ave_MAP = tot_MAP / step
-        ave_MAP_per_epoch.append(ave_MAP)
-        ave_overlaps = tot_overlaps / tot_overlaps_cnt
-        ave_overlaps_per_epoch.append(ave_overlaps)
-        print(f"Validation completed for epoch. Average MAP {ave_MAP}, average IoU {ave_overlaps} from {tot_overlaps_cnt}")
-
+        ave_mAP = tot_mAP / step
+        ave_mAP_per_epoch.append(ave_mAP)
     save_loss_per_epoch_chart(loss_per_epoch)
     save_ave_MAP_per_epoch_chart(ave_MAP_per_epoch)
     save_ave_overlaps_per_epoch_chart(ave_overlaps_per_epoch)
