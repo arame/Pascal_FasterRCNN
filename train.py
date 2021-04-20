@@ -8,6 +8,7 @@ import time
 import torch
 import torch.optim as optim
 import torchvision
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 import pascal_data as dataset
 from torch.utils import data
 from config import Hyper, Constants
@@ -38,6 +39,12 @@ def train(epoch = 0):
     fasterrcnn_args = {'box_score_thresh':Hyper.box_score_thresh, 'num_classes':91, 'min_size':512, 'max_size':800}
     # fasterrcnn_resnet50_fpn is pretrained on Coco's 91 classes
     fasterrcnn_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,**fasterrcnn_args)
+    # get the input features for the classifier
+    in_features = fasterrcnn_model.roi_heads.box_predictor.cls_score.in_features
+    # replace pre-trained head with our features head
+    # the head layer will classify the images based on our data input features
+    fasterrcnn_model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+
     print(fasterrcnn_model)
     fasterrcnn_model = fasterrcnn_model.to(Constants.device)
     fasterrcnn_optimizer_pars = {'lr': Hyper.learning_rate}
