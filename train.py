@@ -35,7 +35,6 @@ def train(epoch = 0):
     if Constants.load_model:
         fasterrcnn_model = load_checkpoint(fasterrcnn_model, fasterrcnn_optimizer, epoch)
 
-    fasterrcnn_model.train()  
     start_time = time.strftime('%Y/%m/%d %H:%M:%S')
     print(f"{start_time} Starting epoch: {epoch}")
     total_steps = 0
@@ -45,6 +44,7 @@ def train(epoch = 0):
     ave_MAP_per_epoch = []
     ave_overlaps_per_epoch = []
     for _ in range(Hyper.total_epochs):
+        fasterrcnn_model.train()
         epoch += 1
         epoch_loss = 0
         print(f"Starting epoch: {epoch}")
@@ -96,6 +96,7 @@ def train(epoch = 0):
 
         fasterrcnn_model.eval()  # Set to eval mode for validation
         step = 0
+<<<<<<< HEAD
         tot_MAP = 0
         ave_MAP = 0
         tot_overlaps = 0
@@ -106,6 +107,12 @@ def train(epoch = 0):
             if step % 100 == 0:
                 curr_time = time.strftime('%Y/%m/%d %H:%M:%S')
                 print(f"-- {curr_time} step: {step}")
+=======
+        tot_mAP = 0
+        for id, batch in enumerate(val_dataloader):
+            _, X, y = batch
+            step += 1
+>>>>>>> e7f4acb00ca31ea593efca9d095d86ebba25be60
             X, y['labels'], y['boxes'] = X.to(Constants.device), y['labels'].to(Constants.device), y['boxes'].to(
                 Constants.device)
             # list of images
