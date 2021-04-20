@@ -35,7 +35,6 @@ def train(epoch = 0):
     if Constants.load_model:
         fasterrcnn_model = load_checkpoint(fasterrcnn_model, fasterrcnn_optimizer, epoch)
 
-    fasterrcnn_model.train()  
     start_time = time.strftime('%Y/%m/%d %H:%M:%S')
     print(f"{start_time} Starting epoch: {epoch}")
     total_steps = 0
@@ -44,6 +43,7 @@ def train(epoch = 0):
     loss_per_epoch = []
     ave_mAP_per_epoch = []
     for _ in range(Hyper.total_epochs):
+        fasterrcnn_model.train()
         epoch += 1
         epoch_loss = 0
         print(f"Starting epoch: {epoch}")
@@ -96,13 +96,9 @@ def train(epoch = 0):
         fasterrcnn_model.eval()  # Set to eval mode for validation
         step = 0
         tot_mAP = 0
-        ave_mAP = 0
         for id, batch in enumerate(val_dataloader):
             _, X, y = batch
             step += 1
-            if step % 100 == 0:
-                curr_time = time.strftime('%Y/%m/%d %H:%M:%S')
-                print(f"-- {curr_time} step: {step} ave mAP {ave_mAP}")
             X, y['labels'], y['boxes'] = X.to(Constants.device), y['labels'].to(Constants.device), y['boxes'].to(
                 Constants.device)
             # list of images
@@ -126,6 +122,7 @@ def train(epoch = 0):
             tot_mAP += mAP
 
         ave_mAP = tot_mAP / step
+        print(f"For epoch {epoch} after all {step} validation steps, average mAP: {ave_mAP}")
         ave_mAP_per_epoch.append(ave_mAP)
     save_loss_per_epoch_chart(loss_per_epoch)
     save_ave_mAP_per_epoch_chart(ave_mAP_per_epoch)
