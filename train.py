@@ -96,7 +96,7 @@ def train(epoch = 0):
 
         fasterrcnn_model.eval()  # Set to eval mode for validation
         step = 0
-<<<<<<< HEAD
+
         tot_MAP = 0
         ave_MAP = 0
         tot_overlaps = 0
@@ -104,8 +104,6 @@ def train(epoch = 0):
         for id, batch in enumerate(val_dataloader):
             _, X, y = batch
             step += 1
-                curr_time = time.strftime('%Y/%m/%d %H:%M:%S')
-=======
             X, y['labels'], y['boxes'] = X.to(Constants.device), y['labels'].to(Constants.device), y['boxes'].to(
                 Constants.device)
             # list of images
@@ -130,8 +128,11 @@ def train(epoch = 0):
             tot_overlaps += sum(overlaps)
             tot_overlaps_cnt += len(overlaps)
 
-        ave_mAP = tot_mAP / step
-        ave_mAP_per_epoch.append(ave_mAP)
+        ave_MAP = tot_MAP / step
+        ave_MAP_per_epoch.append(ave_MAP)
+        ave_overlaps = tot_overlaps / tot_overlaps_cnt
+        ave_overlaps_per_epoch.append(ave_overlaps)
+
     save_loss_per_epoch_chart(loss_per_epoch)
     save_ave_MAP_per_epoch_chart(ave_MAP_per_epoch)
     save_ave_overlaps_per_epoch_chart(ave_overlaps_per_epoch)
