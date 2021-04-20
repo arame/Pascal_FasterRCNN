@@ -35,7 +35,6 @@ def test(fasterrcnn_model):
     for id, batch in enumerate(instance_dataloader):
         _,X,y = batch
         step += 1
-        print(f"step: {step}")
         if step % 100 == 0:
             curr_time = time.strftime('%Y/%m/%d %H:%M:%S')
             print(f"-- {curr_time} step: {step}")
@@ -71,11 +70,11 @@ if __name__ == "__main__":
     fasterrcnn_args = {'box_score_thresh':Hyper.box_score_thresh, 'num_classes':91, 'min_size':512, 'max_size':800}
     # fasterrcnn_resnet50_fpn is pretrained on Coco's 91 classes
     fasterrcnn_model_ = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,**fasterrcnn_args)
-    fasterrcnn_model_ = fasterrcnn_model_.to(Constants.device)
     in_features = fasterrcnn_model_.roi_heads.box_predictor.cls_score.in_features
     fasterrcnn_model_.roi_heads.box_predictor = FastRCNNPredictor(in_features, Hyper.num_classes)
+    fasterrcnn_model_ = fasterrcnn_model_.to(Constants.device)
     fasterrcnn_optimizer_pars = {'lr': Hyper.learning_rate}
     fasterrcnn_optimizer = optim.Adam(list(fasterrcnn_model_.parameters()), **fasterrcnn_optimizer_pars)
-    epoch = 50
+    epoch = Hyper.total_epochs
     model = load_checkpoint(fasterrcnn_model_, fasterrcnn_optimizer, epoch)
     test(model)
