@@ -31,9 +31,11 @@ def test(fasterrcnn_model):
     instance_dataloader = data.DataLoader(instance_data_point, **instance_dataloader_args)
     fasterrcnn_model.eval()     # Set to eval mode for validation
     step = 0
+    tot_mAP = 0
     for id, batch in enumerate(instance_dataloader):
         _,X,y = batch
         step += 1
+        print(f"step: {step}")
         if step % 100 == 0:
             curr_time = time.strftime('%Y/%m/%d %H:%M:%S')
             print(f"-- {curr_time} step: {step}")
@@ -52,16 +54,17 @@ def test(fasterrcnn_model):
 
         # Get the predictions from the trained model
         predictions = fasterrcnn_model(images, targets)
-
+        #predictions = predictions.to(Constants.model)
         # now compare the predictions with the ground truth values in the targets
         # TODO IoU calculations and accuracy calculations
         
         mAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
-        print(f"map: {mAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
-
+        #print(f"map: {mAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
+        tot_mAP += mAP
         i = 0
 
-
+    ave_mAP = tot_mAP / step
+    print(f"Average mAP = {ave_mAP}")
 
 
 if __name__ == "__main__":
@@ -69,8 +72,8 @@ if __name__ == "__main__":
     # fasterrcnn_resnet50_fpn is pretrained on Coco's 91 classes
     fasterrcnn_model_ = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,**fasterrcnn_args)
     fasterrcnn_model_ = fasterrcnn_model_.to(Constants.device)
-    in_features = fasterrcnn_model.roi_heads.box_predictor.cls_score.in_features
-    fasterrcnn_model.roi_heads.box_predictor = FastRCNNPredictor(in_features, Hyper.num_classes)
+    in_features = fasterrcnn_model_.roi_heads.box_predictor.cls_score.in_features
+    fasterrcnn_model_.roi_heads.box_predictor = FastRCNNPredictor(in_features, Hyper.num_classes)
     fasterrcnn_optimizer_pars = {'lr': Hyper.learning_rate}
     fasterrcnn_optimizer = optim.Adam(list(fasterrcnn_model_.parameters()), **fasterrcnn_optimizer_pars)
     epoch = 50
