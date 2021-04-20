@@ -6,15 +6,13 @@ import numpy as np
 import os,sys,re
 import time
 import torch
-import torch.optim as optim
-import torchvision
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-import pascal_data as dataset
-from torch.utils import data
+from model import get_model
+from pascal_data import PascalVOC2012Dataset
+from metrics import compute_ap
 from config import Hyper, Constants
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 from utils import load_checkpoint, save_checkpoint, check_if_target_bbox_degenerate
-from results import save_loss_per_epoch_chart
+from results import save_loss_per_epoch_chart, save_ave_mAP_per_epoch_chart
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 def train(epoch = 0):
@@ -26,28 +24,13 @@ def train(epoch = 0):
     pascal_voc_classes_name = {v: k for k, v in pascal_voc_classes.items()} 
     print(pascal_voc_classes, Hyper.num_classes)
     # Modeling exercise: train fcn on Pascal VOC
+    train_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_images)
+    val_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_test_images)
 
-    instance_data_args= {'classes':pascal_voc_classes, 
-                        'img_max_size':Hyper.img_max_size, 
-                        'dir':Constants.dir_images, 
-                        'dir_label_bbox': Constants.dir_label_bbox}
-    instance_data_point = dataset.PascalVOC2012Dataset(**instance_data_args)
-    instance_dataloader_args = {'batch_size':Hyper.batch_size, 'shuffle':True}
-    instance_dataloader = data.DataLoader(instance_data_point, **instance_dataloader_args)
-
-    fasterrcnn_args = {'box_score_thresh':Hyper.box_score_thresh, 'num_classes':91, 'min_size':512, 'max_size':800}
-    # fasterrcnn_resnet50_fpn is pretrained on Coco's 91 classes
-    fasterrcnn_model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,**fasterrcnn_args)
-    # get the input features for the classifier
-    in_features = fasterrcnn_model.roi_heads.box_predictor.cls_score.in_features
-    # replace pre-trained head with our features head
-    # the head layer will classify the images based on our data input features
-    fasterrcnn_model.roi_heads.box_predictor = FastRCNNPredictor(in_features, Hyper.num_classes)
+    fasterrcnn_model, fasterrcnn_optimizer = get_model()
 
     print(fasterrcnn_model)
     fasterrcnn_model = fasterrcnn_model.to(Constants.device)
-    fasterrcnn_optimizer_pars = {'lr': Hyper.learning_rate}
-    fasterrcnn_optimizer = optim.Adam(list(fasterrcnn_model.parameters()), **fasterrcnn_optimizer_pars)
     #####################################################################
     if Constants.load_model:
         fasterrcnn_model = load_checkpoint(fasterrcnn_model, fasterrcnn_optimizer, epoch)
@@ -57,14 +40,15 @@ def train(epoch = 0):
     print(f"{start_time} Starting epoch: {epoch}")
     total_steps = 0
     total_loss = 0
-    length_dataloader = len(instance_dataloader)
+    length_dataloader = len(train_dataloader)
     loss_per_epoch = []
+    ave_mAP_per_epoch = []
     for _ in range(Hyper.total_epochs):
         epoch += 1
         epoch_loss = 0
         print(f"Starting epoch: {epoch}")
         step = 0
-        for id, batch in enumerate(instance_dataloader):
+        for id, batch in enumerate(train_dataloader):
             fasterrcnn_optimizer.zero_grad()
             _,X,y = batch
             total_steps += 1
@@ -108,7 +92,43 @@ def train(epoch = 0):
                 "epoch": epoch
             }
             save_checkpoint(checkpoint)
+
+        fasterrcnn_model.eval()  # Set to eval mode for validation
+        step = 0
+        tot_mAP = 0
+        ave_mAP = 0
+        for id, batch in enumerate(val_dataloader):
+            _, X, y = batch
+            step += 1
+            if step % 100 == 0:
+                curr_time = time.strftime('%Y/%m/%d %H:%M:%S')
+                print(f"-- {curr_time} step: {step} ave mAP {ave_mAP}")
+            X, y['labels'], y['boxes'] = X.to(Constants.device), y['labels'].to(Constants.device), y['boxes'].to(
+                Constants.device)
+            # list of images
+            images = [im for im in X]
+            targets = []
+            lab = {'boxes': y['boxes'].squeeze_(0), 'labels': y['labels'].squeeze_(0)}
+            targets.append(lab)
+            is_bb_degenerate = check_if_target_bbox_degenerate(targets)
+            if is_bb_degenerate:
+                continue  # Ignore images with degenerate bounding boxes
+            # avoid empty objects
+            if len(targets) == 0:
+                continue
+
+            # Get the predictions from the trained model
+            predictions = fasterrcnn_model(images, targets)
+
+            # now compare the predictions with the ground truth values in the targets
+            mAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
+            # print(f"map: {mAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
+            tot_mAP += mAP
+
+        ave_mAP = tot_mAP / step
+        ave_mAP_per_epoch.append(ave_mAP)
     save_loss_per_epoch_chart(loss_per_epoch)
+    save_ave_mAP_per_epoch_chart(ave_mAP_per_epoch)
     end_time = time.strftime('%Y/%m/%d %H:%M:%S')
     print(f"Training end time: {end_time}")
     return fasterrcnn_model
