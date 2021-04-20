@@ -1,11 +1,9 @@
 import numpy as np
 import os,sys,re
 import time
-from PIL import Image as PILImage
 import torch
 import torch.optim as optim
 import torchvision
-from torchvision import transforms as transforms
 import pascal_data as dataset
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torch.utils import data
@@ -59,6 +57,7 @@ def test(fasterrcnn_model):
         # TODO IoU calculations and accuracy calculations
         
         mAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
+        print(f"map: {mAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
 
         i = 0
 

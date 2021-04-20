@@ -98,15 +98,17 @@ class PascalVOC2012Dataset(data.Dataset):
         total_objects = len(nameval)
         wrong_class_ids = []
         good_class_id = []
+        name_list = list_of_classes.keys()
         for id, n in enumerate(nameval):
             name = n.firstChild.nodeValue
             # some classes not in Pascal VOC data set (e.g.head)
-            if name not in list_of_classes.keys():
+            if name not in name_list:
                 total_objects -=1
                 wrong_class_ids.append(id) 
             else:
                 good_class_id.append(id)
-            classes.append(list_of_classes[name])
+                class_id = list_of_classes[name]
+                classes.append(class_id)
 
         xminvals = []
         yminvals = []

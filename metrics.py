@@ -2,8 +2,6 @@ import torchvision
 import torch
 import numpy as np
 import os,sys,re
-from PIL import Image as PILImage
-from torchvision import transforms as transforms
 from config import Constants, Hyper
 
 
@@ -54,7 +52,7 @@ def compute_matches(gt_boxes=None, gt_class_ids=None, pred_boxes=None, pred_clas
     pred_class_ids = pred_class_ids[indices]
     pred_scores = pred_scores[indices]
     # Compute IoU overlaps [pred_masks, gt_masks]
-    overlaps = compute_overlaps_boxes(pred_boxes, gt_boxes, device=Constants.device)
+    overlaps = compute_overlaps_boxes(pred_boxes, gt_boxes)
     # separate predictions for each gt object (a total of gt_boxes splits
     split_overlaps = overlaps.t().split(1)
     # Loop through predictions and find matching ground truth boxes
@@ -87,17 +85,14 @@ def compute_matches(gt_boxes=None, gt_class_ids=None, pred_boxes=None, pred_clas
 
 
 # AP for a single IoU threshold and 1 image
-""" def compute_ap(gt_boxes, gt_class_ids, gt_masks,
-               pred_boxes, pred_class_ids, pred_scores, pred_masks,
-               iou_threshold=0.5): """
 def compute_ap(predictions, targets):
     p = predictions[0]
     t = targets[0]
     pred_boxes = p["boxes"]
-    pred_class_ids = p["classid"]
+    pred_class_ids = p["labels"]
     pred_scores = p["scores"]
     gt_boxes = t["boxes"]
-    gt_class_ids = t["classid"] 
+    gt_class_ids = t["labels"]
 
     # Get matches and overlaps
     gt_match, pred_match, overlaps = compute_matches(gt_boxes, gt_class_ids, pred_boxes, pred_class_ids, pred_scores)
@@ -115,7 +110,6 @@ def compute_ap(predictions, targets):
         precisions[i] = torch.max(precisions[i], precisions[i + 1])
     # Compute mean AP over recall range
     indices = torch.nonzero(recalls[:-1] !=recalls[1:]).squeeze_(1)+1
-    mAP = torch.sum((recalls[indices] - recalls[indices - 1]) *
-                 precisions[indices])
+    mAP = torch.sum((recalls[indices] - recalls[indices - 1]) * precisions[indices])
     return mAP, precisions, recalls, overlaps
 

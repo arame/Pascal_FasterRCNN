@@ -5,17 +5,16 @@
 import numpy as np
 import os,sys,re
 import time
-from PIL import Image as PILImage
 import torch
 import torch.optim as optim
 import torchvision
-from torchvision import transforms as transforms
 import pascal_data as dataset
 from torch.utils import data
 from config import Hyper, Constants
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 from utils import load_checkpoint, save_checkpoint, check_if_target_bbox_degenerate
 from results import save_loss_per_epoch_chart
+
 
 def train(epoch = 0):
     # convert list to dict
@@ -107,7 +106,6 @@ def train(epoch = 0):
     end_time = time.strftime('%Y/%m/%d %H:%M:%S')
     print(f"Training end time: {end_time}")
     return fasterrcnn_model
-
 
  
 if __name__ == "__main__":
