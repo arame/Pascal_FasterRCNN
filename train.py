@@ -24,8 +24,7 @@ def train(epoch = 0):
         pascal_voc_classes[name] = id
 
     pascal_voc_classes_name = {v: k for k, v in pascal_voc_classes.items()} 
-    num_classes = len(pascal_voc_classes)
-    print(pascal_voc_classes, num_classes)
+    print(pascal_voc_classes, Hyper.num_classes)
     # Modeling exercise: train fcn on Pascal VOC
 
     instance_data_args= {'classes':pascal_voc_classes, 
@@ -43,7 +42,7 @@ def train(epoch = 0):
     in_features = fasterrcnn_model.roi_heads.box_predictor.cls_score.in_features
     # replace pre-trained head with our features head
     # the head layer will classify the images based on our data input features
-    fasterrcnn_model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+    fasterrcnn_model.roi_heads.box_predictor = FastRCNNPredictor(in_features, Hyper.num_classes)
 
     print(fasterrcnn_model)
     fasterrcnn_model = fasterrcnn_model.to(Constants.device)

@@ -10,6 +10,7 @@ class Hyper:
     pascal_categories = ['__bgr__', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',  
         'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 
         'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
+    num_classes = len(pascal_categories)
     selected_category = "person"
     pascal_problem = "instance"
 

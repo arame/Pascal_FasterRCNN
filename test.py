@@ -69,6 +69,8 @@ if __name__ == "__main__":
     # fasterrcnn_resnet50_fpn is pretrained on Coco's 91 classes
     fasterrcnn_model_ = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True,**fasterrcnn_args)
     fasterrcnn_model_ = fasterrcnn_model_.to(Constants.device)
+    in_features = fasterrcnn_model.roi_heads.box_predictor.cls_score.in_features
+    fasterrcnn_model.roi_heads.box_predictor = FastRCNNPredictor(in_features, Hyper.num_classes)
     fasterrcnn_optimizer_pars = {'lr': Hyper.learning_rate}
     fasterrcnn_optimizer = optim.Adam(list(fasterrcnn_model_.parameters()), **fasterrcnn_optimizer_pars)
     epoch = 50
