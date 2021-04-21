@@ -3,7 +3,7 @@ node_modules
 *.env 
 .env* 
 *.local
-*.jpg
+*.db
 *.jpeg
 *.png
 *.gif

@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 ''' Code adapted from 
 https://colab.research.google.com/drive/1eAUjzV3nZXkUXi0spPg6zUHtJWaUSzFk?usp=sharing#scrollTo=8Dbx7HZFIKhz '''
+''' I got better results using the PILImage library.
+    In order to annotate the image I had to use the cv2 library'''
 
 
 def individual_image(fasterrcnn_model, t_image, img, path):
@@ -38,6 +40,7 @@ def individual_image(fasterrcnn_model, t_image, img, path):
     file_bb = path.replace(".jpg", "_out.jpg")
     print(f"output file {file_bb}")
     cv2.imwrite(file_bb, img)
+    print("** Image saved, the end **")
 
 
 # this is same transform used in the dataloader code.
