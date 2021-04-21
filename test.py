@@ -49,11 +49,11 @@ def test(fasterrcnn_model):
         MAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
         # print(f"map: {MAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
         tot_MAP += MAP
-        tot_overlaps += torch.sum(overlaps)
-        tot_overlaps_cnt += len(overlaps[0])
+        #tot_overlaps += torch.sum(overlaps)
+        #tot_overlaps_cnt += len(overlaps[0])
 
-    ave_mAP = tot_MAP / step
-    print(f"Average mAP = {ave_mAP}")
+    ave_MAP = tot_MAP / step
+    print(f"Average MAP = {ave_MAP}")
 
 
 if __name__ == "__main__":
