@@ -1,35 +1,54 @@
 from config import Hyper, Constants
 from utils import load_checkpoint
 import os
+import cv2
 from PIL import Image as PILImage
 import numpy as np
 from torchvision import transforms as transforms
+import matplotlib.pyplot as plt
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
+''' Code adapted from 
+https://colab.research.google.com/drive/1eAUjzV3nZXkUXi0spPg6zUHtJWaUSzFk?usp=sharing#scrollTo=8Dbx7HZFIKhz '''
 
 
-def individual_image(fasterrcnn_model, image):
+def individual_image(fasterrcnn_model, t_image, img, path):
     fasterrcnn_model.eval()
-    prediction = fasterrcnn_model(image)
+    prediction = fasterrcnn_model(t_image)
     print(prediction)
+    boxes = prediction[0]["boxes"]
+    labels = prediction[0]["labels"]
+
+    # this will help us create a different colour for each class
+    COLOURS = np.random.uniform(0, 255, size=(Hyper.num_classes, 3))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    for i, box in enumerate(boxes):
+        label_index = labels[i]
+        text = Hyper.pascal_categories[label_index]
+        color = COLOURS[labels[i]]
+        cv2.rectangle(
+            img,
+            (int(box[0]), int(box[1])),
+            (int(box[2]), int(box[3])),
+            color, 2
+        )
+        cv2.putText(img, text, (int(box[0]), int(box[1]-5)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2,
+                    lineType=cv2.LINE_AA)
+
+    file_bb = path.replace(".jpg", "_out.jpg")
+    print(f"output file {file_bb}")
+    cv2.imwrite(file_bb, img)
 
 
+# this is same transform used in the dataloader code.
 def transform_img(img):
-    h, w, c = img.shape
-    h_, w_ = Hyper.img_max_size[0], Hyper.img_max_size[1]
-    img_size = tuple((h_, w_))
-    # these mean values are for BGR!!
-
     t_ = transforms.Compose([
         transforms.ToPILImage(),
-        # transforms.Resize(img_size),
-        transforms.ToTensor(),
-        # transforms.Normalize(mean=[0.407, 0.457, 0.485],
-        #                     std=[1,1,1])])
+        transforms.ToTensor()
     ])
     img = t_(img)
     img = img.unsqueeze_(0)
     img = img.to(Constants.device)
-    # need this for the input in the model
-    # returns image tensor (CxHxW)
     return img
 
 
@@ -37,11 +56,11 @@ def get_image(file):
     path = os.path.join(Constants.dir_individual_image, file)
     img = np.array(PILImage.open(path))
     t_img = transform_img(img)
-    return t_img
+    return t_img, img, path
 
 
 if __name__ == "__main__":
-    image_ = get_image("cats_and_dogs.jpg")
+    t_image_, img_, path_ = get_image("cats_and_dogs.jpg")
     epoch = Hyper.total_epochs
     model = load_checkpoint(epoch)
-    individual_image(model, image_)
+    individual_image(model, t_image_, img_, path_)
