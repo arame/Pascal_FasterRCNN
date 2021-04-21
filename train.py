@@ -125,17 +125,21 @@ def train(epoch = 0):
             MAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
             # print(f"map: {mAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
             tot_MAP += MAP
-            tot_overlaps += sum(overlaps)
-            tot_overlaps_cnt += len(overlaps)
+            #if len(overlaps) > 0:
+            #    tot_overlaps += sum(overlaps)
+            #    tot_overlaps_cnt += len(overlaps)
 
         ave_MAP = tot_MAP / step
         ave_MAP_per_epoch.append(ave_MAP)
-        ave_overlaps = tot_overlaps / tot_overlaps_cnt
-        ave_overlaps_per_epoch.append(ave_overlaps)
+        print(f"Average MAP in epoch {epoch} = {ave_MAP}")
+        #ave_overlaps = 0
+        #if tot_overlaps_cnt > 0:
+            #ave_overlaps = tot_overlaps / tot_overlaps_cnt
+        #ave_overlaps_per_epoch.append(ave_overlaps)
 
     save_loss_per_epoch_chart(loss_per_epoch)
     save_ave_MAP_per_epoch_chart(ave_MAP_per_epoch)
-    save_ave_overlaps_per_epoch_chart(ave_overlaps_per_epoch)
+    #save_ave_overlaps_per_epoch_chart(ave_overlaps_per_epoch)
     end_time = time.strftime('%Y/%m/%d %H:%M:%S')
     print(f"Training end time: {end_time}")
     return fasterrcnn_model

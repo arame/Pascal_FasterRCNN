@@ -1,6 +1,7 @@
 import numpy as np
 import os, sys, re
 import time
+import torch
 from model import get_model
 from pascal_data import PascalVOC2012Dataset
 from config import Hyper, Constants
@@ -16,7 +17,9 @@ def test(fasterrcnn_model):
     instance_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_test_images)
     fasterrcnn_model.eval()  # Set to eval mode for validation
     step = 0
-    tot_mAP = 0
+    tot_MAP = 0
+    tot_overlaps = 0
+    tot_overlaps_cnt = 0
     for id, batch in enumerate(instance_dataloader):
         _, X, y = batch
         step += 1
@@ -43,11 +46,13 @@ def test(fasterrcnn_model):
         # now compare the predictions with the ground truth values in the targets
         # TODO IoU calculations and accuracy calculations
 
-        mAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
-        # print(f"map: {mAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
-        tot_mAP += mAP
+        MAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
+        # print(f"map: {MAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
+        tot_MAP += MAP
+        tot_overlaps += torch.sum(overlaps)
+        tot_overlaps_cnt += len(overlaps[0])
 
-    ave_mAP = tot_mAP / step
+    ave_mAP = tot_MAP / step
     print(f"Average mAP = {ave_mAP}")
 
 
