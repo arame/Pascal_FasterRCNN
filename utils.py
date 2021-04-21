@@ -1,5 +1,6 @@
 import torch as T
 from config import OutputStore
+from model import get_model
 
 
 def save_checkpoint(checkpoint):
@@ -9,7 +10,8 @@ def save_checkpoint(checkpoint):
     T.save(checkpoint, OutputStore.backup_model_path)
 
 
-def load_checkpoint(model, optimizer, epoch):
+def load_checkpoint(epoch):
+    model, optimizer = get_model()
     checkpoint = {
         "state_dict": model.state_dict(),
         "optimizer": optimizer.state_dict(),

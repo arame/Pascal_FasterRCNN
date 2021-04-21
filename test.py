@@ -2,7 +2,6 @@ import numpy as np
 import os, sys, re
 import time
 import torch
-from model import get_model
 from pascal_data import PascalVOC2012Dataset
 from config import Hyper, Constants
 from utils import load_checkpoint, save_checkpoint, check_if_target_bbox_degenerate
@@ -44,7 +43,6 @@ def test(fasterrcnn_model):
         predictions = fasterrcnn_model(images, targets)
         # predictions = predictions.to(Constants.model)
         # now compare the predictions with the ground truth values in the targets
-        # TODO IoU calculations and accuracy calculations
 
         MAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
         # print(f"map: {MAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
@@ -57,7 +55,6 @@ def test(fasterrcnn_model):
 
 
 if __name__ == "__main__":
-    fasterrcnn_model, fasterrcnn_optimizer = get_model()
     epoch = Hyper.total_epochs
-    model = load_checkpoint(fasterrcnn_model, fasterrcnn_optimizer, epoch)
+    model = load_checkpoint(epoch)
     test(model)

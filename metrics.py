@@ -65,7 +65,7 @@ def compute_matches(gt_boxes=None, gt_class_ids=None, pred_boxes=None, pred_clas
         # ground truth class
         gt_class = gt_class_ids[_i]
         if (splits > Hyper.box_score_thresh).any():
-            # get best predictions, their indices inthe IoU tensor and their classes
+            # get best predictions, their indices in the IoU tensor and their classes
             global_best_preds_inds = torch.nonzero(splits[0] > Hyper.box_score_thresh).view(-1)
             pred_classes = pred_class_ids[global_best_preds_inds]
             best_preds = splits[0][splits[0] > Hyper.box_score_thresh]

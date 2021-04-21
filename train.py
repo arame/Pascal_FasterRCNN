@@ -131,7 +131,7 @@ def train(epoch = 0):
 
         ave_MAP = tot_MAP / step
         ave_MAP_per_epoch.append(ave_MAP)
-        print(f"Average MAP in epoch {epoch} = {ave_MAP}")
+        print(f"Average MAP in epoch {epoch} = {ave_MAP} for {step} images")
         #ave_overlaps = 0
         #if tot_overlaps_cnt > 0:
             #ave_overlaps = tot_overlaps / tot_overlaps_cnt
