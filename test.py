@@ -4,7 +4,7 @@ import time
 import torch
 from pascal_data import PascalVOC2012Dataset
 from config import Hyper, Constants
-from utils import load_checkpoint, save_checkpoint, check_if_target_bbox_degenerate
+from utils import load_checkpoint, check_if_target_bbox_degenerate
 from metrics import compute_ap
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -13,13 +13,13 @@ def test(fasterrcnn_model):
     start_time = time.strftime('%Y/%m/%d %H:%M:%S')
     print("-" * 100)
     print(f"{start_time} Starting testing the model")
-    instance_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_test_images)
+    val_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_test_images)
     fasterrcnn_model.eval()  # Set to eval mode for validation
     step = 0
     tot_MAP = 0
     tot_overlaps = 0
     tot_overlaps_cnt = 0
-    for id, batch in enumerate(instance_dataloader):
+    for id, batch in enumerate(val_dataloader):
         _, X, y = batch
         step += 1
         if step % 100 == 0:

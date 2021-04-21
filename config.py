@@ -32,6 +32,7 @@ class Constants:
     dir_images = "../pascal/train_data"
     dir_test_images = "../pascal/test_data"
     dir_label_bbox = "../pascal/annotations"
+    dir_individual_image = "images"
 
 
 class OutputStore:
