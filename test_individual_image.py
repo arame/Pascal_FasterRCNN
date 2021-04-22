@@ -73,7 +73,8 @@ def get_image(file):
 if __name__ == "__main__":
     # aeroplane_with_persons.jpg
     # cats_and_dogs.jpg
-    t_image_, img_, path_ = get_image("aeroplane_with_persons.jpg")
+    # sofa_dog_person.jpg
+    t_image_, img_, path_ = get_image("sofa_dog_person.jpg")
     epoch = Hyper.total_epochs
     model = load_checkpoint(epoch)
     individual_image(model, t_image_, img_, path_)

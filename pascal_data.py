@@ -19,6 +19,7 @@ class PascalVOC2012Dataset(data.Dataset):
 
     def __init__(self, **kwargs):
         # Classes from Pascal VOC 2012 dataset, in the correct order without the bgr
+        self.stage = kwargs['stage']
         self.voc_classes = kwargs['classes']
         self.dir = kwargs['dir']
         self.dir_bbox = kwargs['dir_label_bbox']
@@ -50,11 +51,10 @@ class PascalVOC2012Dataset(data.Dataset):
     # load one image
     # idx: index in the list of images
     def load_img(self, idx):
-        # im = cv2.imread(os.path.join(self.dir, self.imgs[idx]))
-        # im = self.transform_img(im, self.img_max_size)
-        im = np.array(PILImage.open(os.path.join(self.dir, self.imgs[idx])))
-        im = self.transform_img(im, self.img_max_size)
-        return im
+        img_file = self.imgs[idx]
+        im = np.array(PILImage.open(os.path.join(self.dir, img_file)))
+        t_im = self.transform_img(im, self.img_max_size)
+        return t_im, im, img_file
 
     # this method returns the size of the object inside the bounding box:
     # input is a list in format xmin,ymin, xmax,ymax
@@ -151,15 +151,17 @@ class PascalVOC2012Dataset(data.Dataset):
         label['boxes'] = torch.as_tensor(bboxes)
         return label
 
+
     [staticmethod]
-    def get_data_loader(dir):
+    def get_data_loader(dir, stage):
         pascal_voc_classes = {}
         for id, name in enumerate(Hyper.pascal_categories):
             pascal_voc_classes[name] = id
         instance_data_args = {'classes': pascal_voc_classes,
                               'img_max_size': Hyper.img_max_size,
                               'dir': dir,
-                              'dir_label_bbox': Constants.dir_label_bbox}
+                              'dir_label_bbox': Constants.dir_label_bbox,
+                              'stage': stage}
         instance_data_point = PascalVOC2012Dataset(**instance_data_args)
         instance_dataloader_args = {'batch_size': Hyper.batch_size}
         instance_dataloader = data.DataLoader(instance_data_point, **instance_dataloader_args)
@@ -174,6 +176,9 @@ class PascalVOC2012Dataset(data.Dataset):
         # here you have to implement functionality using the methods in this class to return X (image) and y (its label)
         # X must be dimensionality (3,max_size[1], max_size[0]) if you use VGG16
         # y must be dimensioanlity (self.voc_classes)
-        X = self.load_img(idx)
+        X, img, img_file = self.load_img(idx)
         y = self.extract_bboxes_and_masks_pascal(idx, self._classes)
+        if self.stage == "test":
+            return idx, X, img, img_file, y
+
         return idx, X, y

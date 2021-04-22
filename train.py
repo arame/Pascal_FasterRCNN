@@ -24,8 +24,8 @@ def train(epoch = 0):
     pascal_voc_classes_name = {v: k for k, v in pascal_voc_classes.items()} 
     print(pascal_voc_classes, Hyper.num_classes)
     # Modeling exercise: train fcn on Pascal VOC
-    train_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_images)
-    val_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_test_images)
+    train_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_images, "train")
+    val_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_val_images, "val")
 
     fasterrcnn_model, fasterrcnn_optimizer = get_model()
 

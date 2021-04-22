@@ -31,11 +31,14 @@ class Constants:
     save_model = True
     dir_images = "../pascal/train_data"
     dir_test_images = "../pascal/test_data"
+    dir_val_images = "../pascal/val_data"
     dir_label_bbox = "../pascal/annotations"
     dir_individual_image = "images"
 
 
+
 class OutputStore:
+    dir_output_test_images = "../output_test"
     backup_pascal_model_folder = "../backup_pascal"
     backup_model_path = "../backup_pascal/model.pth"
     chart_path_pascal = "../charts_pascal"
@@ -46,6 +49,7 @@ class OutputStore:
 
     [staticmethod]
     def set_output_stores():
+        OutputStore.check_folder(OutputStore.dir_output_test_images)
         OutputStore.check_folder(OutputStore.backup_pascal_model_folder)
         OutputStore.check_folder(OutputStore.chart_path_pascal)
 

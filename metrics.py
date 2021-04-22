@@ -5,13 +5,6 @@ import os,sys,re
 from config import Constants, Hyper
 
 
-# display image with bounding boxes overlaid
-# this requires an input image and a list of 
-# predictions. Image needs to be resized
-def display_img_with_bboxes(img, bboxes):
-    pass
-
-
 # this method returns the size of the object inside the bounding box:
 # input is a list in format xmin,ymin, xmax,ymax
 def get_size_boxes(bboxes):
