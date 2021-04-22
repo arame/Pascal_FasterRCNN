@@ -161,6 +161,7 @@ class PascalVOC2012Dataset(data.Dataset):
                               'img_max_size': Hyper.img_max_size,
                               'dir': dir,
                               'dir_label_bbox': Constants.dir_label_bbox,
+                              'rpn_batch_size_per_image':  Hyper.anchor_size,
                               'stage': stage}
         instance_data_point = PascalVOC2012Dataset(**instance_data_args)
         instance_dataloader_args = {'batch_size': Hyper.batch_size}
