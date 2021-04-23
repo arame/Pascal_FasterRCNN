@@ -22,7 +22,7 @@ def load_checkpoint(epoch):
     print(f"=> Loading checkpoint from epoch {epoch}")
     model.load_state_dict(checkpoint["state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer"])
-    return model
+    return model, optimizer
 
 
 def check_if_target_bbox_degenerate(targets):

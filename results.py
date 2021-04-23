@@ -18,7 +18,7 @@ def save_loss_per_epoch_chart(losses):
 
 
 def save_ave_MAP_per_epoch_chart(ave_MAP):
-    # save the chart of the average mAP (mean average precision) per epoch
+    # save the chart of the average MAP (mean average precision) per epoch
     OutputStore.check_folder(OutputStore.chart_path_pascal)
     chart_path = os.path.join(OutputStore.chart_path_pascal, OutputStore.ave_MAP_filename)
     epochs = np.arange(1, len(ave_MAP) + 1)
@@ -31,7 +31,7 @@ def save_ave_MAP_per_epoch_chart(ave_MAP):
     
 
 def save_ave_overlaps_per_epoch_chart(ave_overlaps):
-    # save the chart of the average mAP (mean average precision) per epoch
+    # save the chart of the average MAP (mean average precision) per epoch
     OutputStore.check_folder(OutputStore.chart_path_pascal)
     chart_path = os.path.join(OutputStore.chart_path_pascal, OutputStore.ave_IOU_filename)
     epochs = np.arange(1, len(ave_overlaps) + 1)

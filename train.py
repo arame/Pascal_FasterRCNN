@@ -12,6 +12,7 @@ from metrics import compute_ap
 from config import Hyper, Constants
 from utils import load_checkpoint, save_checkpoint, check_if_target_bbox_degenerate
 from results import save_loss_per_epoch_chart, save_ave_MAP_per_epoch_chart, save_ave_overlaps_per_epoch_chart
+from prediction_buffer import PredictionBuffer
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
@@ -26,13 +27,13 @@ def train(epoch = 0):
     # Modeling exercise: train fcn on Pascal VOC
     train_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_images, "train")
     val_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_val_images, "val")
-    fasterrcnn_model, fasterrcnn_optimizer = get_model()
-    print(fasterrcnn_model)
-    fasterrcnn_model = fasterrcnn_model.to(Constants.device)
     #####################################################################
     if Constants.load_model:
-        fasterrcnn_model = load_checkpoint(fasterrcnn_model, fasterrcnn_optimizer, epoch)
+        fasterrcnn_model, fasterrcnn_optimizer = load_checkpoint(epoch)
+    else:
+        fasterrcnn_model, fasterrcnn_optimizer = get_model()
 
+    print(fasterrcnn_model)
     start_time = time.strftime('%Y/%m/%d %H:%M:%S')
     print(f"{start_time} Starting epoch: {epoch}")
     total_steps = 0
@@ -114,9 +115,11 @@ def train(epoch = 0):
 
             # Get the predictions from the trained model
             predictions = fasterrcnn_model(images, targets)
+            buffer = PredictionBuffer(targets, predictions)
 
             # now compare the predictions with the ground truth values in the targets
-            MAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
+            MAP, precisions, recalls, overlaps = compute_ap(buffer)
+            #MAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
             tot_MAP += MAP
 
         ave_MAP = tot_MAP / step

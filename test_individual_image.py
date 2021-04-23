@@ -73,7 +73,7 @@ def get_image(file):
 def process_images(image_file):
     t_image_, img_, path_ = get_image(image_file)
     epoch = Hyper.total_epochs
-    model = load_checkpoint(epoch)
+    model, _ = load_checkpoint(epoch)
     individual_image(model, t_image_, img_, path_)
 
 

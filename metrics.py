@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import os,sys,re
 from config import Constants, Hyper
+from prediction_buffer import PredictionBuffer
 
 
 # this method returns the size of the object inside the bounding box:
@@ -38,12 +39,16 @@ def compute_overlaps_boxes(bboxes1, bboxes2):
 
 
 # compute average precision for the  specified IoU threshold
-def compute_matches(gt_boxes=None, gt_class_ids=None, pred_boxes=None, pred_class_ids=None, pred_scores=None):
+""" def compute_matches(gt_boxes=None, gt_class_ids=None, pred_boxes=None, pred_class_ids=None, pred_scores=None):
     # Sort predictions by score from high to low
     indices = pred_scores.argsort().flip(dims=(0,))
     pred_boxes = pred_boxes[indices]
     pred_class_ids = pred_class_ids[indices]
-    pred_scores = pred_scores[indices]
+    pred_scores = pred_scores[indices] """
+def compute_matches(buffer):
+    # Sort predictions by score from high to low
+    indices = buffer.pred_scores.argsort().flip(dims=(0,))
+    pred_boxes, pred_class_ids, pred_scores, gt_boxes, gt_class_ids = buffer.get_items(indices)
     # Compute IoU overlaps [pred_masks, gt_masks]
     overlaps = compute_overlaps_boxes(pred_boxes, gt_boxes)
     # separate predictions for each gt object (a total of gt_boxes splits
@@ -78,7 +83,7 @@ def compute_matches(gt_boxes=None, gt_class_ids=None, pred_boxes=None, pred_clas
 
 
 # AP for a single IoU threshold and 1 image
-def compute_ap(predictions, targets):
+""" def compute_ap(predictions, targets):
     p = predictions[0]
     t = targets[0]
     pred_boxes = p["boxes"]
@@ -88,8 +93,9 @@ def compute_ap(predictions, targets):
     gt_class_ids = t["labels"]
 
     # Get matches and overlaps
-    gt_match, pred_match, overlaps = compute_matches(gt_boxes, gt_class_ids, pred_boxes, pred_class_ids, pred_scores)
-
+    gt_match, pred_match, overlaps = compute_matches(gt_boxes, gt_class_ids, pred_boxes, pred_class_ids, pred_scores) """
+def compute_ap(buffer):
+    gt_match, pred_match, overlaps = compute_matches(buffer)
     # Compute precision and recall at each prediction box step
     precisions = (pred_match>-1).cumsum(dim=0).float().div(torch.arange(pred_match.numel()).float()+1)
     recalls = (pred_match>-1).cumsum(dim=0).float().div(gt_match.numel())
