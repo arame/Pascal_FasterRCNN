@@ -19,8 +19,6 @@ def test(fasterrcnn_model):
     fasterrcnn_model.eval()  # Set to eval mode for validation
     step = 0
     tot_MAP = 0
-    tot_overlaps = 0
-    tot_overlaps_cnt = 0
     for id, batch in enumerate(test_dataloader):
         _, X, img, img_file, y = batch
         step += 1
@@ -49,12 +47,9 @@ def test(fasterrcnn_model):
         # now compare the predictions with the ground truth values in the targets
 
         MAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
-        # print(f"map: {MAP}, precisions: {precisions}, recalls: {recalls}, overlaps: {overlaps}")
         tot_MAP += MAP
         output_annotated_images(predictions, img, img_file)
         output_stats_for_images(MAP, precisions, recalls, overlaps, img_file)
-        #tot_overlaps += torch.sum(overlaps)
-        #tot_overlaps_cnt += len(overlaps[0])
 
     ave_MAP = tot_MAP / step
     print(f"Average MAP = {ave_MAP}")

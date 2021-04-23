@@ -1,4 +1,4 @@
-from config import Hyper, Constants
+from config import Hyper, Constants, OutputStore
 from utils import load_checkpoint
 import os
 import cv2
@@ -70,11 +70,16 @@ def get_image(file):
     return t_img, img, path
 
 
-if __name__ == "__main__":
-    # aeroplane_with_persons.jpg
-    # cats_and_dogs.jpg
-    # sofa_dog_person.jpg
-    t_image_, img_, path_ = get_image("sofa_dog_person.jpg")
+def process_images(image_file):
+    t_image_, img_, path_ = get_image(image_file)
     epoch = Hyper.total_epochs
     model = load_checkpoint(epoch)
     individual_image(model, t_image_, img_, path_)
+
+
+if __name__ == "__main__":
+    OutputStore.check_folder(Constants.dir_individual_image)
+    image_files = ["aeroplane_with_persons.jpg", "cats_and_dogs.jpg", "sofa_dog_person.jpg"]
+    for image_file in image_files:
+        process_images(image_file)
+

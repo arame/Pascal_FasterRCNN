@@ -5,8 +5,8 @@ class Hyper:
     total_epochs = 50
     learning_rate = 1e-6
     batch_size = 1
-    box_score_thresh = 0.50
-    anchor_size = 512    # default is 256
+    box_score_thresh = 0.75
+    anchor_size = 256    # default is 256
     img_max_size = (512,512)
     pascal_categories = ['__bgr__', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',  
         'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 
