@@ -79,7 +79,7 @@ def process_images(image_file):
 
 if __name__ == "__main__":
     OutputStore.check_folder(Constants.dir_individual_image)
-    image_files = ["aeroplane_with_persons.jpg", "cats_and_dogs.jpg", "sofa_dog_person.jpg"]
+    image_files = ["aeroplane_with_persons.jpg", "cats_and_dogs.jpg", "sofa_dog_person.jpg", "object_detection.jpg"]
     for image_file in image_files:
         process_images(image_file)
 
