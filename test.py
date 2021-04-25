@@ -9,7 +9,8 @@ from utils import load_checkpoint, check_if_target_bbox_degenerate
 from metrics import compute_ap, compute_class_ap
 from prediction_buffer import PredictionBuffer
 from class_data import ClassData
-from results import save_class_metrics
+from results import save_class_metrics, save_combined_class_metrics
+from class_results_buffer import ClassResultsBuffer
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
@@ -60,7 +61,9 @@ def test(fasterrcnn_model):
         output_annotated_images(predictions, img, img_file)
         output_stats_for_images(MAP, precisions, recalls, overlaps, img_file)
 
-    #output_stats_for_class(MAP, precisions, recalls, overlaps)
+    class_results_dict = {}
+    select_class_results_dict = {}
+
     print("Class level precision and recalls")
     print("---------------------------------")
     for i in range(Hyper.num_classes):
@@ -69,11 +72,16 @@ def test(fasterrcnn_model):
         class_pred_match = class_data.pred_match_dict[i]
         if len(class_gt_match) > 0:
             MAP, precisions, recalls = compute_class_ap(class_gt_match, class_pred_match)
+            print(f"MAP for {class_name}: {MAP}")
+            class_results_dict[class_name] = ClassResultsBuffer(class_name, i, MAP, precisions, recalls)
+            if class_name in Hyper.plot_categories:
+                select_class_results_dict[class_name] = class_results_dict[class_name]
             if MAP == 0:
                 continue
 
             save_class_metrics(class_name, precisions, recalls)
-        print(f"MAP for {class_name}: {MAP}")
+        
+    save_combined_class_metrics(select_class_results_dict)
     print("---------------------------------\n\n")
     ave_MAP = tot_MAP / step
     print(f"Average MAP = {ave_MAP}")

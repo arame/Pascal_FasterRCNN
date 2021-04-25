@@ -12,6 +12,7 @@ class Hyper:
         'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 
         'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
     num_classes = len(pascal_categories)
+    plot_categories = ['person', 'dog', 'bird', 'cat', 'horse']
 
 
     [staticmethod]   

@@ -4,6 +4,7 @@ import numpy as np
 import os,sys,re
 from config import Constants, Hyper
 from prediction_buffer import PredictionBuffer
+from class_results_buffer import ClassResultsBuffer
 
 
 # this method returns the size of the object inside the bounding box:

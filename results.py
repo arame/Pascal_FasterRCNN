@@ -48,9 +48,27 @@ def save_class_metrics(class_name, precisions, recalls):
     OutputStore.check_folder(OutputStore.chart_class_path)
     filename = class_name + OutputStore.class_chart_filename
     path = os.path.join(OutputStore.chart_class_path, filename)
-    plt.title("Precision-Recall Curve")
+    plt.title(f"{class_name} Precision-Recall Curve")
     plt.plot(recalls, precisions)
     plt.ylabel('Precision')
     plt.xlabel('Recall')
+    plt.savefig(path)
+    plt.clf()
+
+def save_combined_class_metrics(select_class_results_dict):
+    # chart_class_path
+    OutputStore.check_folder(OutputStore.chart_class_path)
+    list = []
+    for key in select_class_results_dict:
+        list.append(key)
+    names = ', '.join(list)
+    filename = "combined_" + OutputStore.class_chart_filename
+    path = os.path.join(OutputStore.chart_class_path, filename)
+    plt.title(f"{names} Precision-Recall Curve")
+    for key, value in select_class_results_dict.items():
+        plt.plot(value.recalls, value.precisions, label = key)
+    plt.ylabel('Precision')
+    plt.xlabel('Recall')
+    plt.legend()
     plt.savefig(path)
     plt.clf()

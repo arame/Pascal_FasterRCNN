@@ -9,7 +9,7 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 def main():
     print("\n"*10)
     print("-"*100)
-    print("Start of Person Detection in Images")
+    print("Start of Object Detection in Images")
     OutputStore.set_output_stores()     # Ensures the folders exist for output
     Hyper.display()
     fasterrcnn_model = train()
@@ -18,7 +18,7 @@ def main():
     print("\n"*5)
     print("-"*100)
     Hyper.display()
-    print("End of Person Detection in Images")
+    print("End of Object Detection in Images")
     print("-"*100)
 
 
