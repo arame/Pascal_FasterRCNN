@@ -12,8 +12,6 @@ class Hyper:
         'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 
         'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor']
     num_classes = len(pascal_categories)
-    selected_category = "person"
-    pascal_problem = "instance"
 
 
     [staticmethod]   
@@ -35,6 +33,7 @@ class Constants:
     dir_val_images = "../pascal/val_data"
     dir_label_bbox = "../pascal/annotations"
     dir_individual_image = "images"
+    file_class_MAP = "file_class_#.txt"
 
 
 
