@@ -19,10 +19,12 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 def train(epoch = 0):
     # convert list to dict
     pascal_voc_classes = {}
+
     for id, name in enumerate(Hyper.pascal_categories):
         pascal_voc_classes[name] = id
 
     pascal_voc_classes_name = {v: k for k, v in pascal_voc_classes.items()} 
+        
     print(pascal_voc_classes, Hyper.num_classes)
     # Modeling exercise: train fcn on Pascal VOC
     train_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_images, "train")
@@ -116,9 +118,8 @@ def train(epoch = 0):
             # Get the predictions from the trained model
             predictions = fasterrcnn_model(images, targets)
             buffer = PredictionBuffer(targets, predictions)
-
             # now compare the predictions with the ground truth values in the targets
-            MAP, precisions, recalls, overlaps = compute_ap(buffer)
+            MAP, precisions, recalls, overlaps, gt_match, pred_match = compute_ap(buffer)
             #MAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
             tot_MAP += MAP
 

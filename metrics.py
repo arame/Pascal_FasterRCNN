@@ -4,6 +4,7 @@ import numpy as np
 import os,sys,re
 from config import Constants, Hyper
 from prediction_buffer import PredictionBuffer
+from match_buffer import PredMatchBuffer
 
 
 # this method returns the size of the object inside the bounding box:
@@ -53,8 +54,6 @@ def compute_matches(buffer):
     overlaps = compute_overlaps_boxes(pred_boxes, gt_boxes)
     # separate predictions for each gt object (a total of gt_boxes splits
     split_overlaps = overlaps.t().split(1)
-    # Loop through predictions and find matching ground truth boxes
-    match_count = 0
     # At the start all predictions are False Positives, all gts are False Negatives
     pred_match = torch.tensor([-1]).expand(pred_boxes.size()[0]).float()
     gt_match = torch.tensor([-1]).expand(gt_boxes.size()[0]).float()
@@ -72,8 +71,6 @@ def compute_matches(buffer):
             # loop through each prediction's index, sorted in the descending order
             for p in local_best_preds_sorted:
                 if pred_classes[p]==gt_class:
-                    # Hit?
-                    match_count +=1
                     pred_match[global_best_preds_inds[p]] = _i
                     gt_match[_i] = global_best_preds_inds[p]
                     # important: if the prediction is True Positive, finish the loop
@@ -110,5 +107,23 @@ def compute_ap(buffer):
     # Compute mean AP over recall range
     indices = torch.nonzero(recalls[:-1] !=recalls[1:]).squeeze_(1)+1
     MAP = torch.sum((recalls[indices] - recalls[indices - 1]) * precisions[indices])
-    return MAP, precisions, recalls, overlaps
+    return MAP, precisions, recalls, overlaps, gt_match, pred_match
+
+
+def compute_class_ap(gt_match, pred_match):
+    # Calculations at class level
+    precisions = (pred_match>-1).cumsum(dim=0).float().div(torch.arange(pred_match.numel()).float()+1)
+    recalls = (pred_match>-1).cumsum(dim=0).float().div(gt_match.numel())
+    # Pad with start and end values to simplify the math
+    precisions = torch.cat([torch.tensor([0]).float(), precisions, torch.tensor([0]).float()])
+    recalls = torch.cat([torch.tensor([0]).float(), recalls, torch.tensor([1]).float()])
+    # Ensure precision values decrease but don't increase. This way, the
+    # precision value at each recall threshold is the maximum it can be
+    # for all following recall thresholds, as specified by the VOC paper.
+    for i in range(len(precisions) - 2, -1, -1):
+        precisions[i] = torch.max(precisions[i], precisions[i + 1])
+    # Compute mean AP over recall range
+    indices = torch.nonzero(recalls[:-1] !=recalls[1:]).squeeze_(1)+1
+    MAP = torch.sum((recalls[indices] - recalls[indices - 1]) * precisions[indices])
+    return MAP, precisions, recalls
 

@@ -6,8 +6,9 @@ import cv2
 from pascal_data import PascalVOC2012Dataset
 from config import Hyper, Constants, OutputStore
 from utils import load_checkpoint, check_if_target_bbox_degenerate
-from metrics import compute_ap
+from metrics import compute_ap, compute_class_ap
 from prediction_buffer import PredictionBuffer
+from class_data import ClassData
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
@@ -16,6 +17,8 @@ def test(fasterrcnn_model):
     start_time = time.strftime('%Y/%m/%d %H:%M:%S')
     print("-" * 100)
     print(f"{start_time} Starting testing the model")
+
+    class_data = ClassData()
     test_dataloader = PascalVOC2012Dataset.get_data_loader(Constants.dir_test_images, "test")
     fasterrcnn_model.eval()  # Set to eval mode for validation
     step = 0
@@ -47,15 +50,75 @@ def test(fasterrcnn_model):
         # predictions = predictions.to(Constants.model)
         # now compare the predictions with the ground truth values in the targets
         buffer = PredictionBuffer(targets, predictions)
-        MAP, precisions, recalls, overlaps = compute_ap(buffer)
+        
+        MAP, precisions, recalls, overlaps, gt_match, pred_match = compute_ap(buffer)
+        class_data.add_matches(buffer, gt_match, pred_match)
+
         # MAP, precisions, recalls, overlaps = compute_ap(predictions, targets)
         tot_MAP += MAP
         output_annotated_images(predictions, img, img_file)
         output_stats_for_images(MAP, precisions, recalls, overlaps, img_file)
 
+    #output_stats_for_class(MAP, precisions, recalls, overlaps)
+    print("Class level precision and recalls")
+    print("---------------------------------")
+    for i in range(Hyper.num_classes):
+        class_name = Hyper.pascal_categories[i]
+        class_gt_match = class_data.gt_match_dict[i]
+        class_pred_match = class_data.pred_match_dict[i]
+        if len(class_gt_match) > 0:
+            MAP, precisions, recalls = compute_class_ap(class_gt_match, class_pred_match)
+            print(f"For {class_name}: Precision {precisions}, Recall {recalls}, MAP {MAP}")
+    print("---------------------------------\n\n")
     ave_MAP = tot_MAP / step
     print(f"Average MAP = {ave_MAP}")
 
+""" def update_class_dict(class_dict, buffer, gt_match, pred_match):
+    limit = max(len(gt_match), len(pred_match))
+    for i in range(limit):
+        gt_idx, pred_idx, gt_class_id, pred_class_id = get_idx_both(gt_match, pred_match, buffer, i)
+        if gt_class_id > -1:
+            class_buffer_gt = class_dict[gt_class_id]
+            if gt_idx == -1:
+                class_buffer_gt.FN_cnt += 1
+                class_dict[gt_class_id] = class_buffer_gt
+
+        if pred_class_id > -1:
+            class_buffer_pred = class_dict[pred_class_id]
+            if pred_idx == -1:
+                class_buffer_pred.FP_cnt += 1
+            else:
+                class_buffer_pred.TP_cnt += 1
+                class_buffer_pred.score.append(buffer.pred_scores[i])
+
+            class_dict[pred_class_id] = class_buffer_pred """
+
+
+""" def get_idx_both(gt_match, pred_match, buffer, i):
+    gt_idx = get_idx(gt_match, i)
+    pred_idx = get_idx(pred_match, i)
+    gt_class_id = get_class_id(buffer.gt_class_ids, gt_idx)
+    pred_class_id = get_class_id(buffer.pred_class_ids, pred_idx)
+    return gt_idx, pred_idx, gt_class_id, pred_class_id
+
+
+def get_class_id(class_ids, idx):
+    if idx == -1:
+        return -1
+
+    if len(class_ids) <= idx:
+        return -1
+
+    class_id = int(class_ids[idx].item())
+    return class_id
+
+
+def get_idx(match, i):
+    if i >= len(match):
+        return -1
+
+    idx = int(match[i].item())
+    return idx """
 
 def output_annotated_images(prediction, img, img_file):
     boxes = prediction[0]["boxes"]
@@ -90,6 +153,7 @@ def output_annotated_images(prediction, img, img_file):
 
 
 def output_stats_for_images(MAP, precisions, recalls, overlaps, img_file):
+
     txt_file = img_file.replace("jpg", "txt")
     path = os.path.join(OutputStore.dir_output_test_images, txt_file)
     lines = [f"{img_file} metrics",
@@ -102,7 +166,7 @@ def output_stats_for_images(MAP, precisions, recalls, overlaps, img_file):
 
 
 if __name__ == "__main__":
-    epoch = Hyper.total_epochs
-    #epoch = 4
+    #epoch = Hyper.total_epochs
+    epoch = 13
     model, _ = load_checkpoint(epoch)
     test(model)
