@@ -4,7 +4,6 @@ import numpy as np
 import os,sys,re
 from config import Constants, Hyper
 from prediction_buffer import PredictionBuffer
-from match_buffer import PredMatchBuffer
 
 
 # this method returns the size of the object inside the bounding box:
@@ -39,13 +38,6 @@ def compute_overlaps_boxes(bboxes1, bboxes2):
     return iou_matrix
 
 
-# compute average precision for the  specified IoU threshold
-""" def compute_matches(gt_boxes=None, gt_class_ids=None, pred_boxes=None, pred_class_ids=None, pred_scores=None):
-    # Sort predictions by score from high to low
-    indices = pred_scores.argsort().flip(dims=(0,))
-    pred_boxes = pred_boxes[indices]
-    pred_class_ids = pred_class_ids[indices]
-    pred_scores = pred_scores[indices] """
 def compute_matches(buffer):
     # Sort predictions by score from high to low
     indices = buffer.pred_scores.argsort().flip(dims=(0,))
@@ -80,17 +72,6 @@ def compute_matches(buffer):
 
 
 # AP for a single IoU threshold and 1 image
-""" def compute_ap(predictions, targets):
-    p = predictions[0]
-    t = targets[0]
-    pred_boxes = p["boxes"]
-    pred_class_ids = p["labels"]
-    pred_scores = p["scores"]
-    gt_boxes = t["boxes"]
-    gt_class_ids = t["labels"]
-
-    # Get matches and overlaps
-    gt_match, pred_match, overlaps = compute_matches(gt_boxes, gt_class_ids, pred_boxes, pred_class_ids, pred_scores) """
 def compute_ap(buffer):
     gt_match, pred_match, overlaps = compute_matches(buffer)
     # Compute precision and recall at each prediction box step
@@ -112,6 +93,8 @@ def compute_ap(buffer):
 
 def compute_class_ap(gt_match, pred_match):
     # Calculations at class level
+    gt_match = torch.FloatTensor(gt_match)
+    pred_match = torch.FloatTensor(pred_match)
     precisions = (pred_match>-1).cumsum(dim=0).float().div(torch.arange(pred_match.numel()).float()+1)
     recalls = (pred_match>-1).cumsum(dim=0).float().div(gt_match.numel())
     # Pad with start and end values to simplify the math

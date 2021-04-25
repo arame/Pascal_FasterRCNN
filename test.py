@@ -9,6 +9,7 @@ from utils import load_checkpoint, check_if_target_bbox_degenerate
 from metrics import compute_ap, compute_class_ap
 from prediction_buffer import PredictionBuffer
 from class_data import ClassData
+from results import save_class_metrics
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
@@ -68,57 +69,15 @@ def test(fasterrcnn_model):
         class_pred_match = class_data.pred_match_dict[i]
         if len(class_gt_match) > 0:
             MAP, precisions, recalls = compute_class_ap(class_gt_match, class_pred_match)
-            print(f"For {class_name}: Precision {precisions}, Recall {recalls}, MAP {MAP}")
+            if MAP == 0:
+                continue
+
+            save_class_metrics(class_name, precisions, recalls)
+        print(f"MAP for {class_name}: {MAP}")
     print("---------------------------------\n\n")
     ave_MAP = tot_MAP / step
     print(f"Average MAP = {ave_MAP}")
-
-""" def update_class_dict(class_dict, buffer, gt_match, pred_match):
-    limit = max(len(gt_match), len(pred_match))
-    for i in range(limit):
-        gt_idx, pred_idx, gt_class_id, pred_class_id = get_idx_both(gt_match, pred_match, buffer, i)
-        if gt_class_id > -1:
-            class_buffer_gt = class_dict[gt_class_id]
-            if gt_idx == -1:
-                class_buffer_gt.FN_cnt += 1
-                class_dict[gt_class_id] = class_buffer_gt
-
-        if pred_class_id > -1:
-            class_buffer_pred = class_dict[pred_class_id]
-            if pred_idx == -1:
-                class_buffer_pred.FP_cnt += 1
-            else:
-                class_buffer_pred.TP_cnt += 1
-                class_buffer_pred.score.append(buffer.pred_scores[i])
-
-            class_dict[pred_class_id] = class_buffer_pred """
-
-
-""" def get_idx_both(gt_match, pred_match, buffer, i):
-    gt_idx = get_idx(gt_match, i)
-    pred_idx = get_idx(pred_match, i)
-    gt_class_id = get_class_id(buffer.gt_class_ids, gt_idx)
-    pred_class_id = get_class_id(buffer.pred_class_ids, pred_idx)
-    return gt_idx, pred_idx, gt_class_id, pred_class_id
-
-
-def get_class_id(class_ids, idx):
-    if idx == -1:
-        return -1
-
-    if len(class_ids) <= idx:
-        return -1
-
-    class_id = int(class_ids[idx].item())
-    return class_id
-
-
-def get_idx(match, i):
-    if i >= len(match):
-        return -1
-
-    idx = int(match[i].item())
-    return idx """
+    print("*** Test run completed ***")
 
 def output_annotated_images(prediction, img, img_file):
     boxes = prediction[0]["boxes"]

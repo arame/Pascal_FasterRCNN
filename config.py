@@ -6,7 +6,7 @@ class Hyper:
     learning_rate = 1e-6
     batch_size = 1
     box_score_thresh = 0.75
-    anchor_size = 256    # default is 256
+    anchor_size = 512    # default is 256
     img_max_size = (512,512)
     pascal_categories = ['__bgr__', 'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',  
         'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 
@@ -33,8 +33,6 @@ class Constants:
     dir_val_images = "../pascal/val_data"
     dir_label_bbox = "../pascal/annotations"
     dir_individual_image = "images"
-    file_class_MAP = "file_class_#.txt"
-
 
 
 class OutputStore:
@@ -42,9 +40,11 @@ class OutputStore:
     backup_pascal_model_folder = "../backup_pascal"
     backup_model_path = "../backup_pascal/model.pth"
     chart_path_pascal = "../charts_pascal"
+    chart_class_path = "../charts_class"
     loss_filename = "losses_per_epoch.jpg"
     ave_MAP_filename = "ave_MAP_per_epoch.jpg"
     ave_IOU_filename = "ave_IOU_per_epoch.jpg"
+    class_chart_filename = "_precision_recall_curve.jpg"
 
 
     [staticmethod]
@@ -52,6 +52,7 @@ class OutputStore:
         OutputStore.check_folder(OutputStore.dir_output_test_images)
         OutputStore.check_folder(OutputStore.backup_pascal_model_folder)
         OutputStore.check_folder(OutputStore.chart_path_pascal)
+        OutputStore.check_folder(OutputStore.chart_class_path)
 
 
     [staticmethod]

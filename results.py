@@ -41,3 +41,16 @@ def save_ave_overlaps_per_epoch_chart(ave_overlaps):
     plt.xlabel('Epoch')
     plt.savefig(chart_path)
     plt.clf()
+
+
+def save_class_metrics(class_name, precisions, recalls):
+    # chart_class_path
+    OutputStore.check_folder(OutputStore.chart_class_path)
+    filename = class_name + OutputStore.class_chart_filename
+    path = os.path.join(OutputStore.chart_class_path, filename)
+    plt.title("Precision-Recall Curve")
+    plt.plot(recalls, precisions)
+    plt.ylabel('Precision')
+    plt.xlabel('Recall')
+    plt.savefig(path)
+    plt.clf()
