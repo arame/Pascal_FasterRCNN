@@ -23,6 +23,7 @@ class PredictionBuffer():
             self.pred_scores = p["scores"]
 
 
-    def get_items(self, i):
+    def get_sorted_items(self, i):
+        i = self.pred_scores.argsort().flip(dims=(0,))
         return self.pred_boxes[i], self.pred_class_ids[i], self.pred_scores[i], self.gt_boxes, self.gt_class_ids
 

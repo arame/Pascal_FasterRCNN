@@ -41,8 +41,7 @@ def compute_overlaps_boxes(bboxes1, bboxes2):
 
 def compute_matches(buffer):
     # Sort predictions by score from high to low
-    indices = buffer.pred_scores.argsort().flip(dims=(0,))
-    pred_boxes, pred_class_ids, pred_scores, gt_boxes, gt_class_ids = buffer.get_items(indices)
+    pred_boxes, pred_class_ids, pred_scores, gt_boxes, gt_class_ids = buffer.get_sorted_items()
     # Compute IoU overlaps [pred_masks, gt_masks]
     overlaps = compute_overlaps_boxes(pred_boxes, gt_boxes)
     # separate predictions for each gt object (a total of gt_boxes splits
